@@ -1,0 +1,70 @@
+import { QueryClient } from "@tanstack/react-query";
+
+// API base URL - points to your Vercel API deployment
+const API_BASE_URL = "https://the-derra-marketplace.vercel.app";
+
+// This is used for making API requests
+export async function apiRequest(
+  method: string,
+  path: string,
+  body?: any
+): Promise<Response> {
+  const options: RequestInit = {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  };
+
+  if (body !== undefined) {
+    options.body = JSON.stringify(body);
+  }
+
+  // Prepend API_BASE_URL to the path if it's an API route
+  const url = path.startsWith("/api") 
+    ? `${API_BASE_URL}${path}`
+    : path;
+
+  return fetch(url, options);
+}
+
+// This is used by TanStack Query as the default fetcher
+async function defaultQueryFn({ queryKey }: { queryKey: string[] }) {
+  const path = queryKey[0];
+  if (!path.startsWith("/api")) {
+    throw new Error(`Invalid query key: ${path}`);
+  }
+
+  const url = `${API_BASE_URL}${path}`;
+  
+  const response = await fetch(url, {
+    credentials: "include",
+  });
+
+  // For 401 responses, return null instead of throwing an error
+  if (response.status === 401) {
+    return null;
+  }
+
+  // For 204 responses (no content), return undefined
+  if (response.status === 204) {
+    return undefined;
+  }
+
+  // For other error responses, throw an error
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  // For successful responses with content, parse the JSON
+  return response.json();
+}
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      queryFn: defaultQueryFn,
+    },
+  },
+});
