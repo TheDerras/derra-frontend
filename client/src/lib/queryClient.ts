@@ -152,4 +152,5 @@ export const queryClient = new QueryClient({
       retry: false,
     },
   },
+  const API_BASE_URL = "https://the-derra-marketplace.vercel.app";
 });
