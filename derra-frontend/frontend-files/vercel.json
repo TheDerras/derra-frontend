@@ -1,0 +1,13 @@
+{
+  "framework": null,
+  "buildCommand": "node vercel-build.js",
+  "devCommand": "npm run dev",
+  "outputDirectory": "dist",
+  "installCommand": "npm install --include=dev",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
+}
